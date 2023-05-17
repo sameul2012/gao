@@ -31,6 +31,8 @@ async fn receive_notification(notification: Json<Notification>) -> impl web::Res
   web::HttpResponse::Ok().json(&response_data)
 }
 
+// can also use #[actix_web::main]
+
 #[ntex::main]
 async fn main() {
   println!("Hello, world!");
