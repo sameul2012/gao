@@ -1,14 +1,27 @@
+// use crate::web::HttpRequest;
+
+use ntex::util::Bytes;
+use ntex::web::test::read_body;
 use ntex::web::types::Json;
-use ntex::web::{self, middleware, App, HttpServer};
+use ntex::web::types::Payload;
+// use ntex::web::Bytes;
+use ntex::web::FromRequest;
+use ntex::web::HttpRequest;
+use ntex::web::HttpResponse;
+use ntex::web::{self, types};
+
+use ntex::web::{middleware, App, HttpServer};
 use serde::{Deserialize, Serialize};
 
 use xml::reader::{EventReader, XmlEvent};
 
 use std::{env, sync::Arc};
 
-// use log::LogLevel;
+use serde_xml_rs::from_str;
 
-use log::{debug, error, info, log_enabled, Level};
+// use log::LogLevel;
+use log::info;
+use log::{debug, error, log_enabled, Level};
 
 #[derive(Debug, Deserialize)]
 struct Notification {
@@ -71,8 +84,35 @@ struct ResponseData {
   // Add more fields as needed
 }
 
+#[derive(Debug, Deserialize)]
+struct XmlData {
+  #[serde(rename = "ToUserName")]
+  to_user_name: String,
+  #[serde(rename = "FromUserName")]
+  from_user_name: String,
+  #[serde(rename = "CreateTime")]
+  create_time: u64,
+  #[serde(rename = "MsgType")]
+  msg_type: String,
+  #[serde(rename = "Event")]
+  event: String,
+  #[serde(rename = "EventKey")]
+  event_key: String,
+  #[serde(rename = "Ticket")]
+  ticket: String,
+}
+
+// async fn handle_post(json: web::types::Json<JsonData>) -> web::types::HttpResponse {
+//   // 使用 json 中的字段值进行后续操作
+//   println!("Field 1: {}", json.field1);
+//   println!("Field 2: {}", json.field2);
+//   // 返回响应
+//   web::types::HttpResponse::Ok().body("JSON data received")
+// }
+
 async fn receive_notification(notification: Json<Notification>) -> impl web::Responder {
   // info!("This is an info log message");
+  info!("this is an info {}", "message");
   // Extract the important information from the notification
   let notification_id = notification.id;
   let notification_message = &notification.message;
@@ -85,6 +125,67 @@ async fn receive_notification(notification: Json<Notification>) -> impl web::Res
 
   // Return a JSON response
   web::HttpResponse::Ok().json(&response_data)
+}
+
+//  mut payload: web::PayloadStream
+//  web::types::HttpResponse  payload: web::types::Payload
+async fn handle_post(payload: web::types::Payload) -> ntex::web::HttpResponse {
+  // // 从请求中获取请求体的字节流
+  // let body_bytes = web::types::body::Bytes::from_request(&request)
+  //   .await
+  //   .unwrap();
+
+  info!("this is an info {:#?}", payload);
+  // Read the request payload into a byte buffer
+  // let body_bytes = web::types::Bytes::from_request(&payload).await.unwrap();
+
+  // Read the request payload into a byte buffer
+  // let body_bytes = web::types::Bytes::from_request(&payload).await.unwrap();
+
+  // Read the request payload into a byte buffer
+  // let body_bytes = ntex::web::test::read_body(payload).await.unwrap();
+
+  // let mut body = web::Bytes::new();
+  // while let Some(chunk) = payload.next().await {
+  //   let chunk = chunk.unwrap();
+  //   body.extend_from_slice(&chunk);
+  // }
+
+  // let body = web::types::take_payload(payload).await;
+  // let body_bytes = body.as_ref().unwrap().to_vec();
+
+  // // 将字节流转换为字符串
+  // let body_string = String::from_utf8_lossy(&body_bytes).to_string();
+
+  // Convert the byte buffer to a string
+  // let body_string = String::from_utf8_lossy(&body_bytes).to_string();
+
+  // // 解析 XML 字符串为相应的结构体或使用自定义的 XML 解析库进行处理
+  // // 在这里，我们使用 serde_xml_rs 进行示例解析
+  // let xml_data: serde_xml_rs::de::Result<XmlData> = serde_xml_rs::from_str(&body_string);
+
+  // Parse the XML string into the desired struct or use a custom XML parsing library
+  // Here, we use serde_xml_rs for demonstration
+  // let xml_data: Result<XmlData, serde_xml_rs::Error> = serde_xml_rs::from_str(&body_string);
+
+  // match xml_data {
+  //   Ok(data) => {
+  //     // 成功解析 XML 数据，可以访问 data 中的字段值进行后续处理
+  //     println!("{:?}", data);
+  //     // 处理 XML 数据
+  //     // ...
+  //   }
+  //   Err(err) => {
+  //     // 解析 XML 数据失败
+  //     println!("Failed to parse XML: {}", err);
+  //     // 处理解析错误
+  //     // ...
+  //   }
+  // }
+
+  // 返回响应
+  // web::types::HttpResponse::Ok().finish()
+  ntex::web::HttpResponse::Ok().finish()
 }
 
 // can also use #[actix_web::main]
@@ -101,7 +202,7 @@ async fn main() {
   // env_logger::init_from_env(
   //   env_logger::Env::default().default_filter_or("info")
   // );
-
+  info!("this is an info {}", "message");
   debug!("this is a debug {}", "message");
   error!("this is printed by default");
 
