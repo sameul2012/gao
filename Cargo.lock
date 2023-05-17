@@ -252,9 +252,11 @@ version = "0.1.0"
 dependencies = [
  "dotenvy",
  "env_logger",
+ "log",
  "ntex",
  "serde",
  "serde_json",
+ "xml-rs",
 ]
 
 [[package]]
@@ -1078,3 +1080,9 @@ name = "windows_x86_64_msvc"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
+
+[[package]]
+name = "xml-rs"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1690519550bfa95525229b9ca2350c63043a4857b3b0013811b2ccf4a2420b01"
