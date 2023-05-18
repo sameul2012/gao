@@ -1,0 +1,52 @@
+refresh_rate: 5 seconds
+
+appenders:
+  my_stdout:
+    kind: console
+    encoder: 
+      pattern: "{h({d(%Y-%m-%d %H:%M:%S)(utc)} - {l}: {m}{n})}"
+  my_file_logger:
+    kind: rolling_file
+    path: log/app.log
+    pattern: "{d(%Y-%m-%d)}"
+    encoder:
+      kind: pattern
+      pattern: "{d(%Y-%m-%d %H:%M:%S.%f %:z)} {h({l})} [{t}] {m}{n}"
+    filter:
+      - kind: threshold
+        level: info
+    policy:
+      kind: compound
+      trigger:
+        kind: size
+        limit: 50kb
+      roller:
+        kind: fixed_window
+        base: 1
+        count: 10
+        pattern: log/app{d(%Y-%m-%d)}{}.log
+  my_special_file_logger:
+    kind: rolling_file
+    path: log/my_special.log
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S.%f %:z)} - {h({l})} [{t}] {m}{n}"
+    policy:
+      trigger:
+        kind: size
+        limit: 50kb
+      roller:
+        kind: fixed_window
+        base: 1
+        count: 10
+        pattern: log/special{}.log
+root:
+  level: trace
+  appenders:
+    - my_stdout
+    - my_file_logger
+loggers:
+  special:
+    level: info
+    appenders:
+      - my_special_file_logger
+    additive: false
