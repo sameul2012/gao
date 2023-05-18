@@ -23,6 +23,9 @@ use serde_xml_rs::from_str;
 use log::info;
 use log::{debug, error, log_enabled, Level};
 
+mod neolog;
+use neolog::mylog;
+
 #[derive(Debug, Deserialize)]
 struct Notification {
   id: u64,
@@ -134,8 +137,15 @@ async fn handle_post(payload: web::types::Payload) -> ntex::web::HttpResponse {
   // let body_bytes = web::types::body::Bytes::from_request(&request)
   //   .await
   //   .unwrap();
+  // let v1 = &HttpRequest
+  // let v2 = &mut ntex::http::Payload;
+  // let body_bytes = web::types::Payload::from_request(&HttpRequest, &payload)
+  //   .await
+  //   .unwrap();
 
+  let str1 = String::from("hello");
   info!("this is an info {:#?}", payload);
+  mylog::bee(&str1);
   // Read the request payload into a byte buffer
   // let body_bytes = web::types::Bytes::from_request(&payload).await.unwrap();
 
@@ -228,14 +238,12 @@ async fn main() {
   }
 
   // Configure and start the ntex server
-  ntex::web::server(|| {
-    App::new().service(web::resource("/").route(web::post().to(receive_notification)))
-  })
-  .bind("127.0.0.1:19389")
-  .unwrap()
-  .run()
-  .await
-  .unwrap();
+  ntex::web::server(|| App::new().service(web::resource("/").route(web::post().to(handle_post))))
+    .bind("127.0.0.1:19389")
+    .unwrap()
+    .run()
+    .await
+    .unwrap();
 }
 
 // use ntex::web;
