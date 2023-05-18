@@ -143,7 +143,7 @@ async fn handle_post(payload: web::types::Payload) -> ntex::web::HttpResponse {
   //   .await
   //   .unwrap();
 
-  let str1 = String::from("hello");
+  let str1 = String::from("handle_post run");
   info!("this is an info {:#?}", payload);
   mylog::bee(&str1);
   // Read the request payload into a byte buffer
