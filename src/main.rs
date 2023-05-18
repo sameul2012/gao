@@ -204,6 +204,9 @@ async fn handle_post(payload: web::types::Payload) -> ntex::web::HttpResponse {
 async fn main() {
   println!("Hello, world!");
 
+  let str1 = String::from("main sta");
+  mylog::bee(&str1);
+
   dotenvy::dotenv().ok();
 
   env::set_var("RUST_LOG", "ntex=info");
