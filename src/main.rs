@@ -1,4 +1,5 @@
 // use crate::web::HttpRequest;
+mod errors;
 
 use ntex::util::Bytes;
 use ntex::web::test::read_body;
@@ -11,6 +12,8 @@ use ntex::web::HttpResponse;
 use ntex::web::{self, types};
 
 use ntex::web::{middleware, App, HttpServer};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+
 use serde::{Deserialize, Serialize};
 
 use xml::reader::{EventReader, XmlEvent};
@@ -25,6 +28,9 @@ use log::{debug, error, log_enabled, Level};
 
 mod neolog;
 use neolog::mylog;
+
+mod weixin;
+use weixin::notify;
 
 #[derive(Debug, Deserialize)]
 struct Notification {
@@ -198,7 +204,15 @@ async fn handle_post(payload: web::types::Payload) -> ntex::web::HttpResponse {
   ntex::web::HttpResponse::Ok().finish()
 }
 
-// can also use #[actix_web::main]
+#[derive(Debug, Clone)]
+pub struct AppState {
+  pub db_pool: Pool<Postgres>,
+}
+
+// #[ntex::main]
+// async fn main() -> std::io::Result<()> {
+
+// }
 
 #[ntex::main]
 async fn main() {
@@ -240,14 +254,68 @@ async fn main() {
     eprintln!("Error parsing XML: {}", e);
   }
 
-  // Configure and start the ntex server
-  ntex::web::server(|| App::new().service(web::resource("/").route(web::post().to(handle_post))))
-    .bind("127.0.0.1:19389")
-    .unwrap()
-    .run()
-    .await
-    .unwrap();
+  let db_url = env::var("DATABASE_URL").expect("Pls set `DATABASE_URL` in env or env var");
+
+  // State
+  let app_state = Arc::new(AppState {
+    db_pool: PgPoolOptions::new()
+      .max_connections(10)
+      .connect(&db_url)
+      .await
+      .unwrap(),
+  });
+
+  // let app = web::App::new().service(
+  //   web::scope("/{project_id}")
+  //     .service(web::resource("/path1").to(|| async { web::HttpResponse::Ok() }))
+  //     .service(web::resource("/path2").to(|| async { web::HttpResponse::Ok() }))
+  //     .service(web::resource("/path3").to(|| async { web::HttpResponse::MethodNotAllowed() })),
+  // );
+
+  HttpServer::new(move || {
+    App::new()
+      .wrap(middleware::Logger::default())
+      .configure(|cfg| route(Arc::clone(&app_state), cfg))
+  })
+  .bind("0.0.0.0:19389")
+  .unwrap()
+  .run()
+  .await
+  .unwrap();
+
+  // HttpServer::new(|| App::new()
+
+  //       .service(web::resource("/").to(|| async { HttpResponse::Ok() })))
+  //   .bind("127.0.0.1:59090")?
+  //   .run()
+  //   .await
+
+  // // Configure and start the ntex server
+  // ntex::web::server(|| App::new().service(web::resource("/").route(web::post().to(handle_post))))
+  //   .bind("127.0.0.1:19389")
+  //   .unwrap()
+  //   .run()
+  //   .await
+  //   .unwrap();
 }
+
+fn route(_state: Arc<AppState>, cfg: &mut web::ServiceConfig) {
+  cfg.service(web::scope("/").route("", web::post().to(notify::new_notify)));
+}
+
+// fn route(_state: Arc<AppState>, cfg: &mut web::ServiceConfig) {
+//   cfg
+//     .service(
+//       web::scope("/article")
+//         .route("/{id}", web::get().to(view::get_article))
+//         .route("", web::post().to(new::new_article))
+//         .route("", web::put().to(edit::edit_article))
+//         .route("/{id}", web::delete().to(delete::delete_article))
+//         .route("/search/{keyword}", web::get().to(search::search_article)),
+//     )
+//     .service(web::scope("/articles").route("", web::get().to(view::get_articles_preview)))
+//     .service(web::scope("/user").route("/login", web::post().to(login::github_login)));
+// }
 
 // use ntex::web;
 
