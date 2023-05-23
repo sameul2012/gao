@@ -277,7 +277,7 @@ async fn main() {
       .wrap(middleware::Logger::default())
       .configure(|cfg| route(Arc::clone(&app_state), cfg))
   })
-  .bind("0.0.0.0:19389")
+  .bind("0.0.0.0:9389")
   .unwrap()
   .run()
   .await
