@@ -218,10 +218,9 @@ pub struct AppState {
 async fn main() {
   println!("Hello, world!");
 
-  // dotenvy::dotenv().ok();
-  // //thread 'main' panicked at 'env_logger::init should not be called after logger initialized:
-  // env::set_var("RUST_LOG", "ntex=info");
-  // env_logger::init();
+  dotenvy::dotenv().ok();
+  env::set_var("RUST_LOG", "ntex=info");
+  env_logger::init();
 
   let str1 = String::from("main sta");
   mylog::bee(&str1);
